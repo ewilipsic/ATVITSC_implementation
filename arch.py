@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 class PVT(nn.Module):
     """Packet-based Vision Transformer"""
 
-    def __init__(self, in_channels=1, image_size=64, patch_size=16, max_packet_len=1500, out_dim=256, depth=2, heads=12, mlp_dim=2048):
+    def __init__(self, in_channels=1, image_size=64, patch_size=16, max_packet_len=1502, out_dim=256, depth=2, heads=12, mlp_dim=2048):
         super().__init__()
         self.vit = ViT(
             channels=in_channels,
@@ -173,7 +173,7 @@ class ATVITSC(nn.Module):
         channels:           int = 1,
         image_size:         int = 64,
         patch_size:         int = 16,
-        max_packet_len:     int = 1500,
+        max_packet_len:     int = 1502,
         shared_feat_dim:    int = 256,
         # ── dynamic weighting ──
         dw_hidden:   int = 128,      # h:  dimension of intermediate vector z
@@ -268,7 +268,7 @@ if __name__ == '__main__':
     num_patches   = (img_size // patch_size) ** 2
 
     x_img         = torch.randn(B, 1, img_size, img_size)
-    patch_indices = torch.randint(0, 1500, (B, num_patches))
+    patch_indices = torch.randint(0, 1502, (B, num_patches))
 
 # %%
 # Plot input image with patches labeled

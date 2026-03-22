@@ -53,16 +53,22 @@ def create_image_from_session(session, n, m):
 
     pkt_images = [create_image_from_packet(packet, m) for packet in session[0:n]] 
     padding_images = [np.zeros((rm,rm), dtype=np.uint8) for extra in range(max(0,n - len(session)))]
+
+    pkt_lens = [packet[IP].len - packet[IP].ihl * 4 for packet in session[0:n]]
+    padding_lens = [1501 for extra in range(max(0,n - len(session)))]
     
     image = np.stack(pkt_images + padding_images).reshape(rn,rn,rm,rm).transpose(0,2,1,3)
-    return image.reshape(rn * rm ,rn * rm)
+    lengths = np.array(pkt_lens + padding_lens)
+
+    return image.reshape(rn * rm ,rn * rm), lengths
 
 class SessionImageDataset(Dataset):
     def __init__(self, path_to_pcaps: list, labels_of_pcap: list, n , m):
         super().__init__()
         assert len(path_to_pcaps) == len(labels_of_pcap) ,"length of labels and pcap paths should be same"
 
-        self.data = []
+        self.images = []
+        self.lens = []
         self.labels = []
 
         for idx in range(len(path_to_pcaps)):
@@ -70,11 +76,13 @@ class SessionImageDataset(Dataset):
             sessions = group_packets_by_session(packets)
 
             for session in list(sessions.values()):
-                self.data.append(create_image_from_session(session , n, m))
+                img, len_array = create_image_from_session(session , n, m)
+                self.images.append(img)
+                self.lens.append(len_array)
                 self.labels.append(labels_of_pcap[idx])
 
     def __len__(self):
         return len(self.data)
     
     def __getitem__(self, index):
-        return self.data[index],self.labels[index]
+        return self.data[index],self.lens[index],self.labels[index]
